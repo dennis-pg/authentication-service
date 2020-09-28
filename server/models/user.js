@@ -96,6 +96,7 @@ UserSchema.methods.getRefreshToken = function getRefreshToken () {
 UserSchema.methods.updateToken = function updateToken(authType, currentToken, newToken) {
 	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === currentToken);
 	this.tokens.push({ kind:authType, tokenIdentifier: newToken });
+<<<<<<< HEAD
 
 	return this.save();
 }
@@ -127,6 +128,9 @@ UserSchema.methods.updateUser = function updateUser({ tenant, email, password, n
 		this.roles = roles;
 	}
 
+=======
+
+>>>>>>> ab0c3e633035435a66e80fe12d73a6c65a096b09
 	return this.save();
 }
 
