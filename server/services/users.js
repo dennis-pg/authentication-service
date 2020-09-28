@@ -54,12 +54,8 @@ function updateToken (user, authType, currentToken, newToken) {
 }
 
 function deleteToken(user, authType, token) {
-<<<<<<< HEAD
 	return user.deleteToken(authType, token)
 	       .catch(err => Promise.reject({ code: 'DELETE TOKEN FAILED', info: err }));
-=======
-
->>>>>>> ab0c3e633035435a66e80fe12d73a6c65a096b09
 }
 
 function setOAuthAuthentication (user) {

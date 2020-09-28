@@ -5,11 +5,7 @@ const cookieParser = require('cookie-parser')
 const verifyUser = require('../middleware/verify-user')
 const { onlyAuthenticated } = require('../middleware/auth-check')
 
-<<<<<<< HEAD
 app.use(cookieParser);
-=======
-app.use(require('cookie-parser')())
->>>>>>> ab0c3e633035435a66e80fe12d73a6c65a096b09
 
 app
 	.post('/api/signin', require('../controllers/signin'))
