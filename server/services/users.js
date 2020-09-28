@@ -20,8 +20,8 @@ function updateUser (user, { tenant = null, email = null, password = null, name 
 
 function deleteUser(user) {
 	User.deleteOne({ _id: { $eq: user._id } })
-	.then(() => console.log(`USER ${user._id} DELETED`))
-	.catch(error => console.log(error)); 
+	.then((() => Promise.resolve({ code: 'USER DELETED SUCCESSFULLY', info: user._id})))
+	.catch((error) => Promise.reject({ code: 'USER DELETE FAILED', info: error })); 
 }
 
 function comparePassword (user, password) {
