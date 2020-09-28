@@ -100,6 +100,36 @@ UserSchema.methods.updateToken = function updateToken(authType, currentToken, ne
 	return this.save();
 }
 
+UserSchema.methods.deleteToken = function deleteToken(authType, tokenIdentifier) {
+	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === tokenIdentifier);
+
+	return this.save();
+}
+
+UserSchema.methods.updateUser = function updateUser({ tenant, email, password, name, roles }) {
+	if (tenant) {
+		this.tenant = tenant;
+	}
+
+	if (email) {
+		this.email = email;
+	}
+
+	if (password) {
+		this.password = password;
+	}
+
+	if (name) {
+		this.name = name;
+	}
+
+	if (roles) {
+		this.roles = roles;
+	}
+
+	return this.save();
+}
+
 /**
  * The pre-save hook method.
  */
