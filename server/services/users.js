@@ -13,13 +13,15 @@ async function getUser (query) {
 	throw { code: 'INCORRECT_CREDENTIALS' }
 }
 
-function updateUser (user, tenant = null, email = null, password = null, name = null, roles = null) {
+function updateUser (user, { tenant = null, email = null, password = null, name = null, roles = null }) {
 	return user.updateUser({ tenant, email, password, name, roles })
 	       .catch(err => Promise.reject({ code: 'UPDATE USER FAILED', info: err }));
 }
 
 function deleteUser(user) {
-
+	User.deleteOne({ _id: { $eq: user._id } })
+	.then(() => console.log(`USER ${user._id} DELETED`))
+	.catch(error => console.log(error)); 
 }
 
 function comparePassword (user, password) {
