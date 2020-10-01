@@ -11,5 +11,5 @@ module.exports = {
 	roles,
 	privilegedRoles,
 	defaultRole: process.env.DEFAULT_ROLE ? process.env.DEFAULT_ROLE : roles[0],
-	defaultAuthType: process.env.DEFAULT_AUTH_TYPE || 'cookie'
+	defaultAuthType: process.env.DEFAULT_AUTH_TYPE || 'cookie',
 };

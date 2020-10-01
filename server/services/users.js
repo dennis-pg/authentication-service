@@ -15,13 +15,13 @@ async function getUser (query) {
 
 function updateUser (user, { tenant = null, email = null, password = null, name = null, roles = null }) {
 	return user.updateUser({ tenant, email, password, name, roles })
-	       .catch(err => Promise.reject({ code: 'UPDATE USER FAILED', info: err }));
+		.catch(err => Promise.reject({ code: 'UPDATE USER FAILED', info: err }))
 }
 
-function deleteUser(user) {
+function deleteUser (user) {
 	User.deleteOne({ _id: { $eq: user._id } })
-	.then((() => Promise.resolve({ code: 'USER DELETED SUCCESSFULLY', info: user._id})))
-	.catch((error) => Promise.reject({ code: 'USER DELETE FAILED', info: error })); 
+		.then((() => Promise.resolve({ code: 'USER DELETED SUCCESSFULLY', info: user._id })))
+		.catch((error) => Promise.reject({ code: 'USER DELETE FAILED', info: error }))
 }
 
 function comparePassword (user, password) {
@@ -50,17 +50,17 @@ function setToken (user, authType) {
 
 function updateToken (user, authType, currentToken, newToken) {
 	return user.updateToken(authType, currentToken, newToken)
-	       .catch(err => Promise.reject({ code: 'UPDATE TOKEN FAILED', info: err }));
+		.catch(err => Promise.reject({ code: 'UPDATE TOKEN FAILED', info: err }))
 }
 
-function deleteToken(user, authType, token) {
+function deleteToken (user, authType, token) {
 	return user.deleteToken(authType, token)
-	       .catch(err => Promise.reject({ code: 'DELETE TOKEN FAILED', info: err }));
+		.catch(err => Promise.reject({ code: 'DELETE TOKEN FAILED', info: err }))
 }
 
 function setOAuthAuthentication (user) {
-	const token = user.getToken('oauth');
-	const refreshToken = user.getRefreshToken();
+	const token = user.getToken('oauth')
+	const refreshToken = user.getRefreshToken()
 
 	return user.save().then(() => {
 		return {
@@ -72,7 +72,11 @@ function setOAuthAuthentication (user) {
 }
 
 function setCookieAuthentication (user) {
-	return { user, cookieToken: user.getToken('cookie') }
+	const cookieToken = user.getToken('cookie')
+
+	return user.save().then(() => {
+		return { user, cookieToken }
+	})
 }
 
 module.exports = {

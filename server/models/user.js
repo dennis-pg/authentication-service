@@ -6,42 +6,42 @@ const { createUniqueId } = require('../services/tokens')
 
 // define the User model schema
 const UserSchema = new mongoose.Schema({
-  tenant: {
-    type: String,
-    index: true,
-    default: '0'
-  },
-  email: {
-    type: String,
-    required: true
-  },
-  password: String,
-  name: String,
-  salt: String,
-  roles: {
-    type: [String],
-    validate (roles) {
-      const notValidRole = roles.find(role => !config.roles.includes(role))
-      if (notValidRole) {
-        return Promise.reject({ message: 'role not valid', role: notValidRole })
-      }
-      return Promise.resolve()
-    }
-  },
-  tokens: {
-	type: [{
-		kind: {
-			type: String,
-			enum: ['cookie', 'oauth'],
-			default: 'cookie'
-		},
-		tokenIdentifier: String
-	}]
-  },
-  created: {
-    type: Date,
-    default: Date.now
-  }
+	tenant: {
+		type: String,
+		index: true,
+		default: '0'
+	},
+	email: {
+		type: String,
+		required: true
+	},
+	password: String,
+	name: String,
+	salt: String,
+	roles: {
+		type: [String],
+		validate (roles) {
+			const notValidRole = roles.find(role => !config.roles.includes(role))
+			if (notValidRole) {
+				return Promise.reject({ message: 'role not valid', role: notValidRole })
+			}
+			return Promise.resolve()
+		}
+	},
+	tokens: {
+		type: [{
+			kind: {
+				type: String,
+				enum: ['cookie', 'oauth'],
+				default: 'cookie'
+			},
+			tokenIdentifier: String
+		}]
+	},
+	created: {
+		type: Date,
+		default: Date.now
+	}
 })
 
 UserSchema.index({ tenant: 1, email: 1 }, { unique: true })
@@ -54,116 +54,116 @@ UserSchema.index({ tenant: 1, email: 1 }, { unique: true })
  * @returns {object} callback
  */
 UserSchema.methods.comparePassword = function comparePassword (password, callback) {
-  bcrypt.compare(password, this.password, callback)
+	bcrypt.compare(password, this.password, callback)
 }
 
 UserSchema.methods.getToken = function getToken (authType) {
-  const secretParams = {
-    sub: this._id,
-	tenant: this.tenant,
-	email: this.email,
-	name: this.name,
-	roles: this.roles  
-  }
+	const secretParams = {
+		sub: this._id,
+		tenant: this.tenant,
+		email: this.email,
+		name: this.name,
+		roles: this.roles
+	}
 
-  if (authType === 'cookie') {
-	const tokenIdentifier = createUniqueId();
-	secretParams.tokenIdentifier = tokenIdentifier;
-	this.tokens.push({
-		kind: authType, 
-		tokenIdentifier
-	});
-  }
+	if (authType === 'cookie') {
+		const tokenIdentifier = createUniqueId()
+		secretParams.tokenIdentifier = tokenIdentifier
+		this.tokens.push({
+			kind: authType,
+			tokenIdentifier
+		})
+	}
 
-  return jwt.sign(secretParams, config.jwtSecret, { expiresIn: config.tokenExpiration })
+	return jwt.sign(secretParams, config.jwtSecret, { expiresIn: config.tokenExpiration })
 }
 
 UserSchema.methods.getRefreshToken = function getRefreshToken () {
-  const creationTime = Date.now();
-	
-  this.tokens.push({
-	kind: 'cookie', 
-	tokenIdentifier: createUniqueId(creationTime)
-  });
+	const creationTime = Date.now()
 
-  return jwt.sign({
-    sub: this._id,
-    tenant: this.tenant,
-	created: creationTime.toJSON()
-  }, config.refreshTokenSecret, { expiresIn: config.refreshTokenExpiration })
+	this.tokens.push({
+		kind: 'cookie',
+		tokenIdentifier: createUniqueId(creationTime)
+	})
+
+	return jwt.sign({
+		sub: this._id,
+		tenant: this.tenant,
+		created: creationTime.toJSON()
+	}, config.refreshTokenSecret, { expiresIn: config.refreshTokenExpiration })
 }
 
-UserSchema.methods.updateToken = function updateToken(authType, currentToken, newToken) {
-	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === currentToken);
-	this.tokens.push({ kind:authType, tokenIdentifier: newToken });
+UserSchema.methods.updateToken = function updateToken (authType, currentToken, newToken) {
+	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === currentToken)
+	this.tokens.push({ kind: authType, tokenIdentifier: newToken })
 
-	return this.save();
+	return this.save()
 }
 
-UserSchema.methods.deleteToken = function deleteToken(authType, tokenIdentifier) {
-	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === tokenIdentifier);
+UserSchema.methods.deleteToken = function deleteToken (authType, tokenIdentifier) {
+	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === tokenIdentifier)
 
-	return this.save();
+	return this.save()
 }
 
-UserSchema.methods.updateUser = function updateUser({ tenant, email, password, name, roles }) {
+UserSchema.methods.updateUser = function updateUser ({ tenant, email, password, name, roles }) {
 	if (tenant) {
-		this.tenant = tenant;
+		this.tenant = tenant
 	}
 
 	if (email) {
-		this.email = email;
+		this.email = email
 	}
 
 	if (password) {
-		this.password = password;
+		this.password = password
 	}
 
 	if (name) {
-		this.name = name;
+		this.name = name
 	}
 
 	if (roles) {
-		this.roles = roles;
+		this.roles = roles
 	}
 
-	return this.save();
+	return this.save()
 }
 
 /**
  * The pre-save hook method.
  */
 UserSchema.pre('save', function saveHook (next) {
-  const user = this
+	const user = this
 
-  // define role for new user
-  if (!user.roles || user.roles.length === 0) {
-    user.roles = [config.defaultRole]
-  }
+	// define role for new user
+	if (!user.roles || user.roles.length === 0) {
+		user.roles = [config.defaultRole]
+	}
 
-  if (!this.salt) {
-    this.salt = bcrypt.genSaltSync()
-  }
+	if (!this.salt) {
+		this.salt = bcrypt.genSaltSync()
+	}
 
-  // proceed further only if the password is modified or the user is new
-  if (!user.isModified('password')) return next()
+	// proceed further only if the password is modified or the user is new
+	if (!user.isModified('password')) return next()
 
-  return bcrypt.genSalt((saltError, salt) => {
-    if (saltError) {
-      return next(saltError)
-    }
+	return bcrypt.genSalt((saltError, salt) => {
+		if (saltError) {
+			return next(saltError)
+		}
 
-    return bcrypt.hash(user.password, salt, (hashError, hash) => {
-      if (hashError) {
-        return next(hashError)
-      }
+		return bcrypt.hash(user.password, salt, (hashError, hash) => {
+			if (hashError) {
+				return next(hashError)
+			}
 
-      // replace a password string with hash value
-      user.password = hash
+			// replace a password string with hash value
+			user.password = hash
 
-      return next()
-    })
-  })
+			return next()
+		})
+	})
 })
 
 module.exports = mongoose.model('User', UserSchema)

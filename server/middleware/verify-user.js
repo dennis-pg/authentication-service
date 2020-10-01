@@ -23,6 +23,7 @@ function cookieVerify (req, res, next) {
 	const token = req.cookies.token || req.signedCookies.token
 	const tenant = req.headers.tenant = req.headers.tenant || '0'
 
+
 }
 
 /**

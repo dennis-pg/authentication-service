@@ -1,8 +1,6 @@
 const jwt = require('jsonwebtoken')
 const { jwtSecret, refreshTokenSecret } = require('../../config')
 
-const uniqueIdLen = 20;
-
 function verifyToken (token, tenant) {
   if (!token.trim()) {
     return Promise.reject()
@@ -27,7 +25,9 @@ function verify (token, tenant, secret) {
 }
 
 function createUniqueId (creationTime = Date.now()) {
-	return creationTime.toString() + Randomstring.generate(uniqueIdLen);
+	console.log('create uniq id')
+	console.log(creationTime.toString() + Buffer.from(Math.random().toString()).toString('base64'))
+	return creationTime.toString() + Buffer.from(Math.random().toString()).toString('base64')
 }
 
 
