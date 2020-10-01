@@ -25,9 +25,10 @@ function verify (token, tenant, secret) {
 }
 
 function createUniqueId (creationTime = Date.now()) {
-	console.log('create uniq id')
-	console.log(creationTime.toString() + Buffer.from(Math.random().toString()).toString('base64'))
-	return creationTime.toString() + Buffer.from(Math.random().toString()).toString('base64')
+	console.log('create unique id')
+	console.log(`The created cookie is: ${creationTime.toString() + ':' + Buffer.from(Math.random().toString()).toString('base64')}`)
+	
+	return creationTime.toString() + ':' + Buffer.from(Math.random().toString()).toString('base64');
 }
 
 
