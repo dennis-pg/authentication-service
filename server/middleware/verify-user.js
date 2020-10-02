@@ -20,7 +20,7 @@ function oAuthVerify (req, res, next) {
 
 function cookieVerify (req, res, next) {
 	// get the last part from a authorization header string like "bearer token-value"
-	const token = req.cookies.token || req.signedCookies.token
+	const token = req.signedCookies.token || req.cookies.token
 	const tenant = req.headers.tenant = req.headers.tenant || '0'
 
 

@@ -13,13 +13,29 @@ async function getUser (query) {
 	throw { code: 'INCORRECT_CREDENTIALS' }
 }
 
-function updateUser (user, { tenant = null, email = null, password = null, name = null, roles = null }) {
-	return user.updateUser({ tenant, email, password, name, roles })
+function updateUser (user, { email = null, password = null, name = null, roles = null }) {
+	if (email) {
+		user.email = email
+	}
+
+	if (password) {
+		user.password = password
+	}
+
+	if (name) {
+		user.name = name
+	}
+
+	if (roles) {
+		user.roles = roles
+	}
+
+	return user.save()
 		.catch(err => Promise.reject({ code: 'UPDATE USER FAILED', info: err }))
 }
 
-function deleteUser (user) {
-	User.deleteOne({ _id: { $eq: user._id } })
+function deleteUser (userId, tenant) {
+	User.deleteOne({ _id: userId, tenant })
 		.then((() => Promise.resolve({ code: 'USER DELETED SUCCESSFULLY', info: user._id })))
 		.catch((error) => Promise.reject({ code: 'USER DELETE FAILED', info: error }))
 }
@@ -60,7 +76,7 @@ function deleteToken (user, authType, token) {
 
 function setOAuthAuthentication (user) {
 	const token = user.getToken('oauth')
-	const refreshToken = user.getRefreshToken()
+	const refreshToken = user.getRefreshToken(token)
 
 	return user.save().then(() => {
 		return {

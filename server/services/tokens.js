@@ -24,11 +24,8 @@ function verify (token, tenant, secret) {
   })
 }
 
-function createUniqueId (creationTime = Date.now()) {
-	console.log('create unique id')
-	console.log(`The created cookie is: ${creationTime.toString() + ':' + Buffer.from(Math.random().toString()).toString('base64')}`)
-	
-	return creationTime.toString() + ':' + Buffer.from(Math.random().toString()).toString('base64');
+function createUniqueId (creationTime = Date.now().toString()) {
+	return creationTime + ':' + Buffer.from(Math.random().toString()).toString('base64');
 }
 
 

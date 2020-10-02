@@ -28,16 +28,15 @@ const UserSchema = new mongoose.Schema({
 			return Promise.resolve()
 		}
 	},
-	tokens: {
-		type: [{
-			kind: {
-				type: String,
-				enum: ['cookie', 'oauth'],
-				default: 'cookie'
-			},
-			tokenIdentifier: String
-		}]
-	},
+	tokens: [{
+		kind: {
+			type: String,
+			enum: ['cookie', 'oauth'],
+			default: config.defaultAuthType
+		},
+		metadata: mongoose.Types.Mixed,
+		tokenIdentifier: String
+	}],
 	created: {
 		type: Date,
 		default: Date.now
@@ -78,54 +77,35 @@ UserSchema.methods.getToken = function getToken (authType) {
 	return jwt.sign(secretParams, config.jwtSecret, { expiresIn: config.tokenExpiration })
 }
 
-UserSchema.methods.getRefreshToken = function getRefreshToken () {
-	const creationTime = Date.now()
+UserSchema.methods.getRefreshToken = function getRefreshToken (relatedToken) {
+	const tokenIdentifier = createUniqueId()
 
 	this.tokens.push({
-		kind: 'cookie',
-		tokenIdentifier: createUniqueId(creationTime)
+		kind: 'oauth',
+		tokenIdentifier,
+		metadata: { relatedToken }
 	})
 
 	return jwt.sign({
 		sub: this._id,
 		tenant: this.tenant,
-		created: creationTime.toJSON()
+		tokenIdentifier
 	}, config.refreshTokenSecret, { expiresIn: config.refreshTokenExpiration })
 }
 
-UserSchema.methods.updateToken = function updateToken (authType, currentToken, newToken) {
-	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === currentToken)
-	this.tokens.push({ kind: authType, tokenIdentifier: newToken })
+UserSchema.methods.updateToken = function updateToken (authType, currentIdentifier, newIdentifier, relatedToken) {
+	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === currentIdentifier)
+	const token = { kind: authType, tokenIdentifier: newIdentifier }
+	if (relatedToken) {
+		token.metadata = { relatedToken }
+	}
+	this.tokens.push(token)
 
 	return this.save()
 }
 
 UserSchema.methods.deleteToken = function deleteToken (authType, tokenIdentifier) {
 	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === tokenIdentifier)
-
-	return this.save()
-}
-
-UserSchema.methods.updateUser = function updateUser ({ tenant, email, password, name, roles }) {
-	if (tenant) {
-		this.tenant = tenant
-	}
-
-	if (email) {
-		this.email = email
-	}
-
-	if (password) {
-		this.password = password
-	}
-
-	if (name) {
-		this.name = name
-	}
-
-	if (roles) {
-		this.roles = roles
-	}
 
 	return this.save()
 }
