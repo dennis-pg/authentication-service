@@ -24,7 +24,7 @@ function verify (token, tenant, secret) {
   })
 }
 
-function createUniqueId (creationTime = Date.now().toString()) {
+function getUniqueId (creationTime = Date.now().toString()) {
 	return creationTime + ':' + Buffer.from(Math.random().toString()).toString('base64');
 }
 
@@ -32,5 +32,5 @@ function createUniqueId (creationTime = Date.now().toString()) {
 module.exports = {
   verifyToken,
   verifyRefreshToken,
-  createUniqueId
+	getUniqueId
 }

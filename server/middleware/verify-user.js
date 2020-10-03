@@ -23,7 +23,20 @@ function cookieVerify (req, res, next) {
 	const token = req.signedCookies.token || req.cookies.token
 	const tenant = req.headers.tenant = req.headers.tenant || '0'
 
-
+	return verifyToken(token, tenant)
+		.then(payload => {
+			const created = Number(payload.tokenIdentifier?.split(':')[0])
+			if (Date.now() - created < 1000 * 60 * 10) { // less than 10 minutes - approved
+				req.userPayload = payload
+				req.userPayload.isPrivileged = payload.roles.some(role => privilegedRoles.includes(role))
+			} else {
+				// should validate long term token, and replace to new token / disconnect!
+				throw new Error('cookie token refresh not implemented yet.')
+			}
+		})
+		.catch(() => {
+			return next()
+		})
 }
 
 /**

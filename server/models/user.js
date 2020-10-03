@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const config = require('../../config')
-const { createUniqueId } = require('../services/tokens')
+const { getUniqueId } = require('../services/tokens')
 
 // define the User model schema
 const UserSchema = new mongoose.Schema({
@@ -66,7 +66,7 @@ UserSchema.methods.getToken = function getToken (authType) {
 	}
 
 	if (authType === 'cookie') {
-		const tokenIdentifier = createUniqueId()
+		const tokenIdentifier = getUniqueId()
 		secretParams.tokenIdentifier = tokenIdentifier
 		this.tokens.push({
 			kind: authType,
@@ -78,7 +78,7 @@ UserSchema.methods.getToken = function getToken (authType) {
 }
 
 UserSchema.methods.getRefreshToken = function getRefreshToken (relatedToken) {
-	const tokenIdentifier = createUniqueId()
+	const tokenIdentifier = getUniqueId()
 
 	this.tokens.push({
 		kind: 'oauth',
