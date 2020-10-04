@@ -34,7 +34,10 @@ const UserSchema = new mongoose.Schema({
 			enum: ['cookie', 'oauth'],
 			default: config.defaultAuthType
 		},
-		metadata: mongoose.Types.Mixed,
+		metadata: {
+			type: mongoose.Schema.Types.Mixed,
+			default: () => ({})
+		},
 		tokenIdentifier: String
 	}],
 	created: {
