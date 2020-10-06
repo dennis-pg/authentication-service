@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const { jwtSecret, refreshTokenSecret } = require('../../config')
+const { cookieTokenExpiration } = require('../../config')
 
 function verifyToken (token, tenant) {
   if (!token.trim()) {
@@ -29,8 +30,16 @@ function getUniqueId (creationTime = Date.now().toString()) {
 }
 
 
+function setCookie (res, cookieId) {
+	res.cookie('token', cookieId, { maxAge: cookieTokenExpiration, httpOnly: true });
+
+	return res;
+}
+
+
 module.exports = {
   verifyToken,
   verifyRefreshToken,
-	getUniqueId
+  getUniqueId,
+  setCookie
 }

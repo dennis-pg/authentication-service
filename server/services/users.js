@@ -95,6 +95,10 @@ function setCookieAuthentication (user) {
 	})
 }
 
+async function checkIfTokenExists (tokenId) {
+	return User.findOne({'tokens.tokenIdentifier': tokenId});
+}
+
 module.exports = {
 	getUser,
 	updateUser,
@@ -102,5 +106,6 @@ module.exports = {
 	comparePassword,
 	setToken,
 	updateToken,
-	deleteToken
+	deleteToken,
+	checkIfTokenExists
 }

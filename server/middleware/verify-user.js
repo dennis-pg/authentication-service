@@ -1,5 +1,7 @@
-const { verifyToken } = require('../services/tokens')
+const { verifyToken, getUniqueId, setCookie } = require('../services/tokens')
+const { checkIfTokenExists, updateToken } = require('../services/users')
 const { privilegedRoles } = require('../../config')
+
 
 function oAuthVerify (req, res, next) {
 	// get the last part from a authorization header string like "bearer token-value"
@@ -29,9 +31,26 @@ function cookieVerify (req, res, next) {
 			if (Date.now() - created < 1000 * 60 * 10) { // less than 10 minutes - approved
 				req.userPayload = payload
 				req.userPayload.isPrivileged = payload.roles.some(role => privilegedRoles.includes(role))
+				return next()
 			} else {
-				// should validate long term token, and replace to new token / disconnect!
-				throw new Error('cookie token refresh not implemented yet.')
+				const user = checkIfTokenExists(payload.tokenIdentifier);
+				if (user) {
+					const newCookieIdentifier = getUniqueId();
+					updateToken(user, 'cookie', payload.tokenIdentifier, newCookieIdentifier)
+					.then(() =>{
+						req.userPayload = payload;
+						req.userPayload.isPrivileged = payload.roles.some(role => privilegedRoles.includes(role));
+						req.userPayload.newCookieIdentifier = newCookieIdentifier;
+						res = setCookie(res, newCookieIdentifier);
+						return next();
+					})
+					.catch((err) => {
+						return new Error(`FAILED TO UPDATE NEW TOKEN IN USER`);
+					})
+
+				} else {
+					return new Error(`TOKEN DOESN'T EXIST`);
+				}
 			}
 		})
 		.catch(() => {

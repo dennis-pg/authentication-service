@@ -1,5 +1,5 @@
 const { validateBasicSignInSignUpForm } = require('../../helpers/form-validations')
-const { cookieTokenExpiration } = require('../../config')
+const { setCookie } = require('../services/tokens')
 
 /**
  * Validate the sign up form
@@ -50,7 +50,7 @@ function tokenPayload(res, data) {
     const { token, refreshToken, cookieToken, user } = data
 
     if (cookieToken) {
-        res.cookie('token', cookieToken, { maxAge: cookieTokenExpiration, httpOnly: true })
+        res = setCookie(res, cookieToken)
         return res.status(200).json({
             payload: { user }
         }).end()
