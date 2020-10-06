@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const config = require('../../config')
-const { getUniqueId } = require('../services/tokens')
+const { getSignedToken, getUniqueId } = require('../services/tokens')
 
 // define the User model schema
 const UserSchema = new mongoose.Schema({
@@ -60,24 +60,15 @@ UserSchema.methods.comparePassword = function comparePassword (password, callbac
 }
 
 UserSchema.methods.getToken = function getToken (authType) {
-	const secretParams = {
-		sub: this._id,
-		tenant: this.tenant,
-		email: this.email,
-		name: this.name,
-		roles: this.roles
-	}
-
+	let tokenIdentifier
 	if (authType === 'cookie') {
-		const tokenIdentifier = getUniqueId()
-		secretParams.tokenIdentifier = tokenIdentifier
+		tokenIdentifier = getUniqueId()
 		this.tokens.push({
 			kind: authType,
 			tokenIdentifier
 		})
 	}
-
-	return jwt.sign(secretParams, config.jwtSecret, { expiresIn: config.tokenExpiration })
+	return getSignedToken(this, tokenIdentifier).token
 }
 
 UserSchema.methods.getRefreshToken = function getRefreshToken (relatedToken) {
@@ -97,7 +88,7 @@ UserSchema.methods.getRefreshToken = function getRefreshToken (relatedToken) {
 }
 
 UserSchema.methods.updateToken = function updateToken (authType, currentIdentifier, newIdentifier, relatedToken) {
-	this.tokens = this.tokens.filter(token => token.kind === authType && token.tokenIdentifier === currentIdentifier)
+	this.tokens = this.tokens.filter(token => !(token.kind === authType && token.tokenIdentifier === currentIdentifier))
 	const token = { kind: authType, tokenIdentifier: newIdentifier }
 	if (relatedToken) {
 		token.metadata = { relatedToken }

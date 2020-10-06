@@ -36,8 +36,8 @@ function updateUser (user, { email = null, password = null, name = null, roles =
 
 function deleteUser (userId, tenant) {
 	User.deleteOne({ _id: userId, tenant })
-		.then((() => Promise.resolve({ code: 'USER DELETED SUCCESSFULLY', info: user._id })))
-		.catch((error) => Promise.reject({ code: 'USER DELETE FAILED', info: error }))
+		.then((() => Promise.resolve({ code: 'USER_DELETED_SUCCESSFULLY', info: user._id })))
+		.catch((error) => Promise.reject({ code: 'USER_DELETE_FAILED', info: error }))
 }
 
 function comparePassword (user, password) {
@@ -61,12 +61,12 @@ function setToken (user, authType) {
 	if (authType === 'cookie') {
 		return setCookieAuthentication(user)
 	}
-	throw { code: 'INVALID AUTH TYPE' }
+	throw { code: 'INVALID_AUTH_TYPE' }
 }
 
 function updateToken (user, authType, currentToken, newToken) {
 	return user.updateToken(authType, currentToken, newToken)
-		.catch(err => Promise.reject({ code: 'UPDATE TOKEN FAILED', info: err }))
+		.catch(err => Promise.reject({ code: 'UPDATE_TOKEN_FAILED', info: err }))
 }
 
 function deleteToken (user, authType, token) {
@@ -95,8 +95,10 @@ function setCookieAuthentication (user) {
 	})
 }
 
-async function checkIfTokenExists (tokenId) {
-	return User.findOne({'tokens.tokenIdentifier': tokenId});
+function getUserIfTokenExists (tenant, userId, tokenId) {
+	return User.findOne({ _id: userId, tenant, 'tokens.tokenIdentifier': tokenId })
+		.then(user => user || Promise.reject())
+		.catch(() => Promise.reject({ code: 'USER_WITH_TOKEN_NOT_EXISTS' }))
 }
 
 module.exports = {
@@ -107,5 +109,5 @@ module.exports = {
 	setToken,
 	updateToken,
 	deleteToken,
-	checkIfTokenExists
+	getUserIfTokenExists
 }
